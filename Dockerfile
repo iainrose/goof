@@ -1,6 +1,8 @@
 # FROM node:6-stretch
 FROM node:14.1.0
 
+LABEL org.opencontainers.image.source="https://github.com/iainrose/goof"
+
 RUN mkdir /usr/src/goof
 RUN mkdir /tmp/extracted_files
 COPY . /usr/src/goof
