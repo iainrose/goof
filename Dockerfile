@@ -1,5 +1,5 @@
 # FROM node:6-stretch
-FROM node:16.9.0
+FROM node:gallium-buster
 
 LABEL org.opencontainers.image.source="https://github.com/iainrose/goof"
 
