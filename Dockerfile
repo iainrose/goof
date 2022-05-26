@@ -1,5 +1,5 @@
 # FROM node:6-stretch
-FROM node:14.1.0
+FROM node:14.19.3
 
 LABEL org.opencontainers.image.source="https://github.com/iainrose/goof"
 
