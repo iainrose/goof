@@ -31,5 +31,5 @@ jobs:
     - name: Run Snyk
       run: |
          snyk monitor || true
-         snyk iac report . --json | snyk-to-html -o results_iac.html || true
+         snyk iac report || true
          snyk container monitor snykschmidtty/goof:latest || true
