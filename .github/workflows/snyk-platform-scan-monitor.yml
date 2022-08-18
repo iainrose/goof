@@ -31,5 +31,5 @@ jobs:
     - name: Run Snyk
       run: |
          snyk monitor --remote-repo-url="goofGithubAction" --target-reference="$(git branch --show-current)" || true
-         snyk iac report --remote-repo-url="goofGithubAction" --target-reference="$(git branch --show-current)" || true
+         snyk iac test --report --remote-repo-url="goofGithubAction" --target-reference="$(git branch --show-current)" || true
          snyk container monitor snykschmidtty/goof:latest --remote-repo-url="goofGithubAction" --target-reference="$(git branch --show-current)" || true
