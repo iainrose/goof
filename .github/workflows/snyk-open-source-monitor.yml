@@ -1,4 +1,4 @@
-name: "Snyk Platform Scan Monitor"
+name: "Snyk Open Source Monitor"
 
 on:
   workflow_dispatch:  
