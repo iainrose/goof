@@ -1,0 +1,35 @@
+name: "Snyk Platform Scan Monitor"
+
+on:
+  workflow_dispatch:  
+    branches:
+    - master
+  schedule:
+  - cron: "0 0 * * *"
+
+jobs:
+  Pipeline-Job:
+    # Configure Environment
+    name: 'Snyk Platform Scan'
+    runs-on: ubuntu-latest
+    env: 
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+       
+    steps:
+    # Checkout Code
+    - name: Checkout Code
+      uses: actions/checkout@master
+
+    # Install and Authenticate to Snyk
+    - name: Install Snyk & Authenticate
+      run: |
+         sudo npm install -g snyk
+         sudo npm install -g snyk-to-html
+         snyk auth ${SNYK_TOKEN}
+         
+    # Run Snyk Scans
+    - name: Run Snyk
+      run: |
+         snyk monitor || true
+         snyk iac report . --json | snyk-to-html -o results_iac.html || true
+         snyk container monitor snykschmidtty/goof:latest || true
