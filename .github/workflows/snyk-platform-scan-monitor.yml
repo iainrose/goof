@@ -30,6 +30,6 @@ jobs:
     # Run Snyk Scans
     - name: Run Snyk
       run: |
-         snyk monitor || true
-         snyk iac report || true
-         snyk container monitor snykschmidtty/goof:latest || true
+         snyk monitor --target-reference="$(git branch --show-current)" || true
+         snyk iac report --target-reference="$(git branch --show-current)" || true
+         snyk container monitor snykschmidtty/goof:latest --target-reference="$(git branch --show-current)" || true
