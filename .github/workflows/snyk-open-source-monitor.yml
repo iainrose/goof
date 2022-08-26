@@ -24,11 +24,9 @@ jobs:
     - name: Install Snyk & Authenticate
       run: |
          sudo npm install -g snyk
-         sudo npm install -g snyk-to-html
          snyk auth ${SNYK_TOKEN}
          
     # Run Snyk Scan
     - name: Run Snyk Open Source
       run: |
-         snyk monitor --remote-repo-url="goofGithubAction" --target-reference="$(git branch --show-current)" || true
- 
+         snyk monitor --remote-repo-url="goofGithubAction" --target-reference="$(git branch --show-current)"
